@@ -1,0 +1,175 @@
+<!doctype html>
+<html lang="he" dir="rtl">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <title>מעקב ביוץ</title>
+  <meta name="description" content="מעקב מחזור, ביוץ ובדיקות ביוץ - הכל נשמר רק במכשיר">
+  <meta name="theme-color" content="#c2477a">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="default">
+  <meta name="apple-mobile-web-app-title" content="מעקב ביוץ">
+  <link rel="manifest" href="manifest.webmanifest">
+  <link rel="icon" href="icons/icon.svg" type="image/svg+xml">
+  <link rel="apple-touch-icon" href="icons/apple-touch-icon.png">
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+  <header class="topbar">
+    <h1 id="viewTitle">מעקב ביוץ</h1>
+  </header>
+
+  <main id="app">
+    <!-- לוח שנה -->
+    <section id="view-calendar" class="view active">
+      <div id="summary" class="card summary"></div>
+
+      <div class="card">
+        <div class="cal-head">
+          <button class="icon-btn" id="prevMonth" aria-label="חודש קודם">›</button>
+          <div class="cal-title">
+            <span id="monthLabel"></span>
+            <button class="chip-btn" id="todayBtn">היום</button>
+          </div>
+          <button class="icon-btn" id="nextMonth" aria-label="חודש הבא">‹</button>
+        </div>
+        <div class="cal-weekdays">
+          <span>א׳</span><span>ב׳</span><span>ג׳</span><span>ד׳</span><span>ה׳</span><span>ו׳</span><span>ש׳</span>
+        </div>
+        <div id="calGrid" class="cal-grid"></div>
+      </div>
+
+      <div class="card legend">
+        <div><i class="lg lg-period"></i>וסת</div>
+        <div><i class="lg lg-pperiod"></i>וסת צפויה</div>
+        <div><i class="lg lg-fertile"></i>חלון פוריות</div>
+        <div><i class="lg lg-peak"></i>הכי פורה</div>
+        <div><i class="lg lg-ov"></i>ביוץ צפוי</div>
+        <div><i class="lg lg-ovc"></i>ביוץ מאומת</div>
+        <div><i class="dot dot-neg"></i>בדיקה שלילית</div>
+        <div><i class="dot dot-faint"></i>בדיקה חלשה</div>
+        <div><i class="dot dot-pos"></i>בדיקה חיובית/שיא</div>
+        <div><span class="lg-heart">♥</span>ניסיון</div>
+      </div>
+      <p class="disclaimer">התחזיות הן הערכה סטטיסטית בלבד ואינן ייעוץ רפואי.</p>
+    </section>
+
+    <!-- השוואת בדיקות -->
+    <section id="view-tests" class="view">
+      <div class="card">
+        <label class="field">
+          <span>מחזור</span>
+          <select id="testsCycleSelect"></select>
+        </label>
+        <p class="muted small">כל הבדיקות של המחזור לפי סדר הימים. אפשר לגלול לצדדים ולגעת בתמונה כדי להגדיל אותה.</p>
+      </div>
+      <div id="testsStrip" class="tests-strip"></div>
+    </section>
+
+    <!-- היסטוריה -->
+    <section id="view-history" class="view">
+      <div id="stats" class="card stats"></div>
+
+      <div class="card">
+        <h2>הוספת מחזור קודם</h2>
+        <form id="addCycleForm" class="row-form">
+          <label class="field"><span>תאריך התחלה</span><input type="date" id="cycleStartInput" required></label>
+          <label class="field narrow"><span>ימי וסת</span><input type="number" id="cyclePeriodInput" min="1" max="15" value="5" required></label>
+          <button class="btn primary" type="submit">הוספה</button>
+        </form>
+      </div>
+
+      <div class="card">
+        <h2>הוספת ביוץ ידוע</h2>
+        <form id="addOvForm" class="row-form">
+          <label class="field"><span>תאריך</span><input type="date" id="ovDateInput" required></label>
+          <label class="field"><span>מקור</span>
+            <select id="ovSourceInput">
+              <option value="lh">בדיקת ביוץ</option>
+              <option value="us">אולטרסאונד</option>
+              <option value="bbt">טמפרטורה</option>
+              <option value="signs">סימנים בגוף</option>
+              <option value="other">אחר</option>
+            </select>
+          </label>
+          <button class="btn primary" type="submit">הוספה</button>
+        </form>
+      </div>
+
+      <div class="card">
+        <h2>מחזורים</h2>
+        <div id="cyclesList" class="list"></div>
+      </div>
+
+      <div class="card">
+        <h2>ביוצים ידועים</h2>
+        <div id="ovList" class="list"></div>
+      </div>
+    </section>
+
+    <!-- הגדרות -->
+    <section id="view-settings" class="view">
+      <div class="card">
+        <h2>ברירות מחדל לחישוב</h2>
+        <p class="muted small">משמשות כל עוד אין מספיק היסטוריה. אחרי שמוזנים מחזורים וביוצים, החישוב עובר להתבסס על הנתונים שלך.</p>
+        <label class="field"><span>אורך מחזור (ימים)</span><input type="number" id="setCycle" min="18" max="60"></label>
+        <label class="field"><span>אורך שלב לוטאלי (ימים)</span><input type="number" id="setLuteal" min="8" max="20"></label>
+        <label class="field"><span>ימי וסת</span><input type="number" id="setPeriod" min="1" max="15"></label>
+      </div>
+
+      <div class="card">
+        <h2>גיבוי ושחזור</h2>
+        <p class="muted small">כל המידע נשמר רק במכשיר הזה. כדאי לייצא גיבוי מדי פעם (כולל התמונות) ולשמור אותו במקום בטוח.</p>
+        <div class="btn-row">
+          <button class="btn primary" id="exportBtn">ייצוא גיבוי</button>
+          <label class="btn">ייבוא גיבוי<input type="file" id="importInput" accept="application/json,.json" hidden></label>
+        </div>
+        <p id="storageInfo" class="muted small"></p>
+      </div>
+
+      <div class="card">
+        <h2>התקנה על הטלפון</h2>
+        <p class="small"><b>אייפון (Safari):</b> כפתור השיתוף ← "הוסף למסך הבית".</p>
+        <p class="small"><b>אנדרואיד (Chrome):</b> תפריט ⋮ ← "התקן אפליקציה" או "הוסף למסך הבית".</p>
+      </div>
+
+      <div class="card danger-zone">
+        <h2>מחיקת כל המידע</h2>
+        <button class="btn danger" id="wipeBtn">מחק הכל</button>
+      </div>
+    </section>
+  </main>
+
+  <nav class="tabbar">
+    <button data-view="calendar" class="active"><span class="ti">📅</span>לוח שנה</button>
+    <button data-view="tests"><span class="ti">🧪</span>בדיקות</button>
+    <button data-view="history"><span class="ti">📋</span>היסטוריה</button>
+    <button data-view="settings"><span class="ti">⚙️</span>הגדרות</button>
+  </nav>
+
+  <!-- גיליון יום -->
+  <div id="sheetBackdrop" class="backdrop" hidden></div>
+  <div id="daySheet" class="sheet" hidden role="dialog" aria-modal="true" aria-labelledby="sheetTitle">
+    <div class="sheet-handle"></div>
+    <div class="sheet-head">
+      <h2 id="sheetTitle"></h2>
+      <button class="icon-btn" id="closeSheet" aria-label="סגירה">✕</button>
+    </div>
+    <div id="sheetBody" class="sheet-body"></div>
+  </div>
+
+  <!-- צפייה בתמונה -->
+  <div id="viewer" class="viewer" hidden>
+    <img id="viewerImg" alt="">
+    <div id="viewerCaption" class="viewer-caption"></div>
+  </div>
+
+  <input type="file" id="cameraInput" accept="image/*" capture="environment" hidden>
+  <input type="file" id="galleryInput" accept="image/*" multiple hidden>
+
+  <div id="toast" class="toast" hidden></div>
+
+  <script src="app.js"></script>
+</body>
+</html>
