@@ -1,5 +1,5 @@
 // Service worker: שמירת קבצי האפליקציה לעבודה גם בלי אינטרנט
-const CACHE = 'ttc-v1';
+const CACHE = 'ttc-v2';
 const ASSETS = ['./', 'index.html', 'style.css', 'app.js', 'manifest.webmanifest',
   'icons/icon.svg', 'icons/icon-192.png', 'icons/icon-512.png', 'icons/apple-touch-icon.png'];
 

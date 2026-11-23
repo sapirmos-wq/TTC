@@ -747,7 +747,16 @@ function bindEvents() {
     }
     if (el.dataset.viewTest) showViewer(state.tests.find(x => x.id === Number(el.dataset.viewTest)));
   });
+  let typingTimer;
+  sb.addEventListener('input', e => {
+    const act = e.target.dataset.act;
+    if (act !== 'notes' && act !== 'bbt') return;
+    const date = state.openDay, val = e.target.value;
+    clearTimeout(typingTimer);
+    typingTimer = setTimeout(() => { const day = getDay(date); day[act] = val; saveDay(day); }, 400);
+  });
   sb.addEventListener('change', async e => {
+    clearTimeout(typingTimer);
     const el = e.target;
     const date = state.openDay;
     const act = el.dataset.act;
@@ -857,6 +866,22 @@ function bindEvents() {
   });
 }
 
+function storageWarning() {
+  const ua = navigator.userAgent;
+  const standalone = window.matchMedia('(display-mode: standalone)').matches || navigator.standalone === true;
+  const ios = /iPhone|iPad|iPod/.test(ua) || (navigator.platform === 'MacIntel' && navigator.maxTouchPoints > 1);
+  const inApp = /FBAN|FBAV|Instagram|Line\/|WhatsApp|GSA\/|Claude|wv\)/i.test(ua);
+  let msg = '';
+  if (inApp) msg = 'האפליקציה פתוחה בתוך דפדפן של אפליקציה אחרת, ושם המידע עלול להימחק. כדאי לפתוח את הקישור ב-Safari או ב-Chrome ולהוסיף למסך הבית.';
+  else if (ios && !standalone) msg = 'באייפון, המידע ב-Safari נשמר בנפרד מהאפליקציה שעל מסך הבית. כדאי להוסיף למסך הבית (שיתוף ← "הוסף למסך הבית") ולהזין את הנתונים רק משם. בגלישה פרטית המידע לא נשמר.';
+  if (!msg) return;
+  try { if (localStorage.getItem('ttc-warn-dismissed') === msg) return; } catch {}
+  const el = document.getElementById('storageWarn');
+  el.querySelector('span').textContent = msg;
+  el.hidden = false;
+  el.querySelector('button').onclick = () => { el.hidden = true; try { localStorage.setItem('ttc-warn-dismissed', msg); } catch {} };
+}
+
 async function init() {
   try {
     db = await openDB();
@@ -869,6 +894,7 @@ async function init() {
   state.viewMonth = { y: d.getFullYear(), m: d.getMonth() };
   bindEvents();
   refresh();
+  storageWarning();
   if (navigator.storage?.persist) navigator.storage.persist().catch(() => {});
   if ('serviceWorker' in navigator && location.protocol !== 'file:') {
     navigator.serviceWorker.register('sw.js').catch(() => {});
